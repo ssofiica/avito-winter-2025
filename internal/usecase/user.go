@@ -20,8 +20,8 @@ func NewUser(r repo.UserInterface) UserInterface {
 	return &User{repo: r}
 }
 
-func (a *User) Auth(ctx context.Context, data entity.AuthRequest) (entity.User, error) {
-	user, err := a.repo.GetUser(ctx, data.Name)
+func (u *User) Auth(ctx context.Context, data entity.AuthRequest) (entity.User, error) {
+	user, err := u.repo.GetUser(ctx, data.Name, 0)
 	if err != nil {
 		return entity.User{}, err
 	}
@@ -31,13 +31,13 @@ func (a *User) Auth(ctx context.Context, data entity.AuthRequest) (entity.User, 
 		if err != nil {
 			return entity.User{}, err
 		}
-		res, err := a.repo.CreateUser(ctx, data.Name, string(pass))
+		res, err := u.repo.CreateUser(ctx, data.Name, string(pass))
 		if err != nil {
 			return entity.User{}, err
 		}
 		return res, nil
 	}
-	password, err := a.repo.GetPassword(ctx, user.ID)
+	password, err := u.repo.GetPassword(ctx, user.ID)
 	if err != nil {
 		return entity.User{}, err
 	}
@@ -47,12 +47,8 @@ func (a *User) Auth(ctx context.Context, data entity.AuthRequest) (entity.User, 
 	return *user, nil
 }
 
-func (a *User) GetUser(ctx context.Context, name string, id uint32) (entity.User, error) {
-	var user *entity.User
-	var err error
-	if name != "" {
-		user, err = a.repo.GetUser(ctx, name)
-	}
+func (u *User) GetUser(ctx context.Context, name string, id uint32) (entity.User, error) {
+	user, err := u.repo.GetUser(ctx, name, id)
 	if err != nil {
 		return entity.User{}, err
 	}

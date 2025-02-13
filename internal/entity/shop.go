@@ -16,18 +16,3 @@ type Inventory struct {
 	Type     string `json:"type"`
 	Quantity uint32 `json:"quantity"`
 }
-
-type CoinHistory struct {
-	Received []Received `json:"received"`
-	Sent     []Sent     `json:"sent"`
-}
-
-type Received struct {
-	FromUser string `json:"fromUser"`
-	Amount   uint32 `json:"amount"`
-}
-
-type Sent struct {
-	ToUser string `json:"toUser"`
-	Amount uint32 `json:"amount"`
-}

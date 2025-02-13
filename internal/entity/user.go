@@ -22,7 +22,7 @@ type AuthData struct {
 type User struct {
 	ID    uint32
 	Name  string
-	Coins uint
+	Coins uint32
 }
 
 type Password string
@@ -41,5 +41,3 @@ func (p *Password) Hash(password string) error {
 	*p = Password(string(bytes))
 	return nil
 }
-
-var jwtSecret = []byte("your_secret_key")

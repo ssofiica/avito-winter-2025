@@ -14,3 +14,18 @@ type Transaction struct {
 	To     uint32
 	Amount uint32
 }
+
+type CoinHistory struct {
+	Received []Received `json:"received"`
+	Sent     []Sent     `json:"sent"`
+}
+
+type Received struct {
+	FromUser string `json:"fromUser"`
+	Amount   uint32 `json:"amount"`
+}
+
+type Sent struct {
+	ToUser string `json:"toUser"`
+	Amount uint32 `json:"amount"`
+}

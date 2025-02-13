@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"avito-winter-2025/internal/entity"
 	"avito-winter-2025/internal/repo"
 	myErrors "avito-winter-2025/internal/utils/errors"
 	"context"
@@ -8,6 +9,7 @@ import (
 
 type MerchInterface interface {
 	Buy(ctx context.Context, userId uint32, merchName string) error
+	GetInventoryHistory(ctx context.Context, id uint32) ([]entity.Inventory, error)
 }
 
 type Merch struct {
@@ -39,4 +41,12 @@ func (m *Merch) Buy(ctx context.Context, userId uint32, merchName string) error 
 		return err
 	}
 	return nil
+}
+
+func (m *Merch) GetInventoryHistory(ctx context.Context, id uint32) ([]entity.Inventory, error) {
+	res, err := m.merchRepo.GetInventoryHistory(ctx, id)
+	if err != nil {
+		return []entity.Inventory{}, err
+	}
+	return res, nil
 }

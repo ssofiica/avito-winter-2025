@@ -6,13 +6,14 @@ import (
 	"context"
 
 	"github.com/jackc/pgx"
+	pgx5 "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var COINS = 1000
 
 type UserInterface interface {
-	GetUser(ctx context.Context, name string) (*entity.User, error)
+	GetUser(ctx context.Context, name string, id uint32) (*entity.User, error)
 	CreateUser(ctx context.Context, name string, password string) (entity.User, error)
 	GetPassword(ctx context.Context, id uint32) (entity.Password, error)
 }
@@ -25,10 +26,23 @@ func NewUser(db *pgxpool.Pool) UserInterface {
 	return &User{db: db}
 }
 
-func (u *User) GetUser(ctx context.Context, name string) (*entity.User, error) {
-	query := `select id, name, coins from "user" where name=$1`
+func (u *User) GetUser(ctx context.Context, name string, id uint32) (*entity.User, error) {
+	if name == "" && id == 0 {
+		return nil, myErrors.NoUserErr
+	}
+	query1 := `select id, name, coins from "user" where `
+	query2 := `=$1`
+	var query string
 	var res entity.User
-	err := u.db.QueryRow(ctx, query, name).Scan(&res.ID, &res.Name, &res.Coins)
+	var row pgx5.Row
+	if name != "" {
+		query = query1 + `name` + query2
+		row = u.db.QueryRow(ctx, query, name)
+	} else if id > 0 {
+		query = query1 + `id` + query2
+		row = u.db.QueryRow(ctx, query, id)
+	}
+	err := row.Scan(&res.ID, &res.Name, &res.Coins)
 	if err != nil {
 		if err.Error() == pgx.ErrNoRows.Error() {
 			return nil, nil

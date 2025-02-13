@@ -38,25 +38,23 @@ func main() {
 	merchRepo := repo.NewMerch(db)
 
 	userUsecase := usecase.NewUser(userRepo)
-	coinUsecase := usecase.NewCoin(coinRepo)
+	coinUsecase := usecase.NewCoin(coinRepo, userRepo)
 	merchUsecase := usecase.NewMerch(merchRepo, coinRepo)
 
 	authHandler := delivery.NewAuthHandler(userUsecase)
 	coinHandler := delivery.NewCoinHandler(coinUsecase, userUsecase)
-	shopHandler := delivery.NewShopHandler(merchUsecase)
+	shopHandler := delivery.NewShopHandler(merchUsecase, userUsecase, coinUsecase)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	r.HandleFunc("/ok", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("query to path: " + r.URL.String())
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
-	//r.Use() //тут мидлвары вставить надо аргументами
-	// r.HandleFunc("/info").Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/sendCoin", delivery.JWTMiddleware(coinHandler.SendCoin)).Methods(http.MethodPost, http.MethodOptions)
-	r.HandleFunc("/buy/{item}", delivery.JWTMiddleware(shopHandler.BuyMerch)).Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/auth", authHandler.Auth).Methods(http.MethodPost, http.MethodOptions)
+	r.HandleFunc("/info", delivery.JWTMiddleware(shopHandler.GetInfo)).Methods(http.MethodGet)
+	r.HandleFunc("/sendCoin", delivery.JWTMiddleware(coinHandler.SendCoin)).Methods(http.MethodPost)
+	r.HandleFunc("/buy/{item}", delivery.JWTMiddleware(shopHandler.BuyMerch)).Methods(http.MethodGet)
+	r.HandleFunc("/auth", authHandler.Auth).Methods(http.MethodPost)
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%s", os.Getenv("SERVER_PORT")),
