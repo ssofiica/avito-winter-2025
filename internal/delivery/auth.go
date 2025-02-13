@@ -22,27 +22,6 @@ func NewAuthHandler(u usecase.UserInterface) *AuthHandler {
 	return &AuthHandler{usecase: u}
 }
 
-func (h *AuthHandler) GetFoodByStatus(w http.ResponseWriter, r *http.Request) {
-	// params := r.URL.Query()
-	// var val1 string = params.Get("status")
-	// var status entity.FoodStatus
-	// status.Scan(val1)
-
-	// vars := mux.Vars(r)
-	// val2 := vars["category_id"]
-	// if val2 == "" {
-	// 	fmt.Println("no id")
-	// 	response.WithError(w, 400, "GetFoodByStatus", errors.New("missing request var"))
-	// 	return
-	// }
-	// id, err := strconv.Atoi(val2)
-	// if err != nil {
-	// 	fmt.Println("err in converting str to int")
-	// 	response.WithError(w, 400, "GetFoodByStatus", err)
-	// 	return
-	// }
-}
-
 func (h *AuthHandler) Auth(w http.ResponseWriter, r *http.Request) {
 	payload := entity.AuthRequest{}
 	if err := request.GetRequestData(r, &payload); err != nil {

@@ -8,4 +8,5 @@ var (
 	ErrDefault500 = errors.New("Ошибка сервера")
 
 	ErrTokenGenerate = errors.New("Ошибка генерации токена")
+	ErrNoRequestVars = errors.New("Остуствуют параметры запроса")
 )

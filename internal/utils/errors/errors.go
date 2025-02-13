@@ -7,4 +7,5 @@ var (
 	WrongLoginOrPasswordErr = errors.New("Неверный логин или пароль")
 	NotEnoughCoinErr        = errors.New("У вас недостаточно стредств")
 	NoUserErr               = errors.New("Пользователь не найден")
+	NoMerchErr              = errors.New("Мерч не найден")
 )

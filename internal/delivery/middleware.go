@@ -13,6 +13,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+type userContextKey string
+
+const userKey userContextKey = "user"
+
 func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
@@ -53,8 +57,7 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 		// Добавляем данные пользователя в контекст (можно использовать context для передачи дальше)
 		user := entity.User{ID: claims.UserID, Name: claims.Name}
-		var key string = "user"
-		ctx := context.WithValue(r.Context(), key, user)
+		ctx := context.WithValue(r.Context(), userKey, user)
 		r = r.WithContext(ctx)
 		// Передаем управление следующему обработчику
 		next.ServeHTTP(w, r)

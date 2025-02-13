@@ -23,7 +23,7 @@ func NewCoinHandler(c usecase.CoinInterface, u usecase.UserInterface) *CoinHandl
 }
 
 func (h *CoinHandler) SendCoin(w http.ResponseWriter, r *http.Request) {
-	from, ok := r.Context().Value("user").(entity.User)
+	from, ok := r.Context().Value(userKey).(entity.User)
 	if !ok {
 		response.WithError(w, 401, ErrDefault401)
 		return
@@ -46,7 +46,7 @@ func (h *CoinHandler) SendCoin(w http.ResponseWriter, r *http.Request) {
 		response.WithError(w, 500, ErrDefault500)
 		return
 	}
-	err = h.coinUC.SendCoin(context.Background(), from.ID, to.ID, uint64(payload.Amount))
+	err = h.coinUC.SendCoin(context.Background(), from.ID, to.ID, uint32(payload.Amount))
 	if err != nil {
 		fmt.Println(err)
 		if errors.Is(err, myErrors.NotEnoughCoinErr) {

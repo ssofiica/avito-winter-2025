@@ -35,10 +35,15 @@ func main() {
 
 	userRepo := repo.NewUser(db)
 	coinRepo := repo.NewCoin(db)
+	merchRepo := repo.NewMerch(db)
+
 	userUsecase := usecase.NewUser(userRepo)
 	coinUsecase := usecase.NewCoin(coinRepo)
+	merchUsecase := usecase.NewMerch(merchRepo, coinRepo)
+
 	authHandler := delivery.NewAuthHandler(userUsecase)
 	coinHandler := delivery.NewCoinHandler(coinUsecase, userUsecase)
+	shopHandler := delivery.NewShopHandler(merchUsecase)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
@@ -50,7 +55,7 @@ func main() {
 	//r.Use() //тут мидлвары вставить надо аргументами
 	// r.HandleFunc("/info").Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/sendCoin", delivery.JWTMiddleware(coinHandler.SendCoin)).Methods(http.MethodPost, http.MethodOptions)
-	// r.HandleFunc("/buy/{item}").Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/buy/{item}", delivery.JWTMiddleware(shopHandler.BuyMerch)).Methods(http.MethodGet, http.MethodOptions)
 	r.HandleFunc("/auth", authHandler.Auth).Methods(http.MethodPost, http.MethodOptions)
 
 	srv := &http.Server{
