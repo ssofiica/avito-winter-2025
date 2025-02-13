@@ -2,6 +2,9 @@ package main
 
 import (
 	"avito-winter-2025/config"
+	"avito-winter-2025/internal/delivery"
+	"avito-winter-2025/internal/repo"
+	"avito-winter-2025/internal/usecase"
 	"context"
 	"fmt"
 	"log"
@@ -30,6 +33,13 @@ func main() {
 	}
 	defer db.Close()
 
+	userRepo := repo.NewUser(db)
+	coinRepo := repo.NewCoin(db)
+	userUsecase := usecase.NewUser(userRepo)
+	coinUsecase := usecase.NewCoin(coinRepo)
+	authHandler := delivery.NewAuthHandler(userUsecase)
+	coinHandler := delivery.NewCoinHandler(coinUsecase, userUsecase)
+
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	r.HandleFunc("/ok", func(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +48,10 @@ func main() {
 		w.Write([]byte("OK"))
 	})
 	//r.Use() //тут мидлвары вставить надо аргументами
-	//r.HandleFunc("", userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
+	// r.HandleFunc("/info").Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/sendCoin", delivery.JWTMiddleware(coinHandler.SendCoin)).Methods(http.MethodPost, http.MethodOptions)
+	// r.HandleFunc("/buy/{item}").Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/auth", authHandler.Auth).Methods(http.MethodPost, http.MethodOptions)
 
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%s", os.Getenv("SERVER_PORT")),
