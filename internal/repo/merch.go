@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+//go:generate mockgen -source=merch.go -destination=mock/merch_mock.go -package=mock
 type MerchInterface interface {
 	Buy(ctx context.Context, userId uint32, merchId uint32, cost uint32) error
 	GetByName(ctx context.Context, name string) (*entity.Merch, error)

@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+//go:generate mockgen -source=coin.go -destination=mock/coin_mock.go -package=mock
 type CoinInterface interface {
 	SendCoin(ctx context.Context, transaction entity.Transaction) error
 	CheckBalance(ctx context.Context, id uint32) (uint32, error)

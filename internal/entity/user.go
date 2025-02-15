@@ -9,6 +9,10 @@ type AuthRequest struct {
 	Password string `json:"password"`
 }
 
+func (s AuthRequest) Valid() bool {
+	return s.Name != "" && s.Password != ""
+}
+
 type AuthResponse struct {
 	Token string `json:"token"`
 }

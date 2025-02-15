@@ -16,6 +16,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 func init() {
@@ -25,11 +26,13 @@ func init() {
 }
 
 func main() {
+	logger := zap.Must(zap.NewProduction())
 	cfg := config.Load()
 	PG_CONN := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", os.Getenv("DATABASE_USER"), os.Getenv("DATABASE_PASSWORD"), os.Getenv("DATABASE_HOST"), os.Getenv("DATABASE_PORT"), os.Getenv("DATABASE_NAME"))
 	db, err := pgxpool.New(context.Background(), PG_CONN)
 	if err != nil {
-		fmt.Println("error wih db", err)
+		errorMsg := "Failed to connect to PostgreSQL"
+		logger.Fatal(errorMsg, zap.String("error", err.Error()))
 	}
 	defer db.Close()
 
@@ -41,7 +44,7 @@ func main() {
 	coinUsecase := usecase.NewCoin(coinRepo, userRepo)
 	merchUsecase := usecase.NewMerch(merchRepo, coinRepo)
 
-	authHandler := delivery.NewAuthHandler(userUsecase)
+	authHandler := delivery.NewAuthHandler(userUsecase, logger)
 	coinHandler := delivery.NewCoinHandler(coinUsecase, userUsecase)
 	shopHandler := delivery.NewShopHandler(merchUsecase, userUsecase, coinUsecase)
 
@@ -68,6 +71,8 @@ func main() {
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
 			log.Fatalf("listen: %s\\n", err)
+		} else {
+			log.Printf("Servier has started")
 		}
 	}()
 

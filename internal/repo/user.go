@@ -12,6 +12,7 @@ import (
 
 var COINS = 1000
 
+//go:generate mockgen -source=user.go -destination=mock/user_mock.go -package=mock
 type UserInterface interface {
 	GetUser(ctx context.Context, name string, id uint32) (*entity.User, error)
 	CreateUser(ctx context.Context, name string, password string) (entity.User, error)

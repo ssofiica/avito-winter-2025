@@ -8,33 +8,38 @@ import (
 	"avito-winter-2025/internal/utils/response"
 	"avito-winter-2025/internal/utils/token"
 	"errors"
-	"fmt"
 
 	"context"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 type AuthHandler struct {
 	usecase usecase.UserInterface
+	logger  *zap.Logger
 }
 
-func NewAuthHandler(u usecase.UserInterface) *AuthHandler {
-	return &AuthHandler{usecase: u}
+func NewAuthHandler(u usecase.UserInterface, l *zap.Logger) *AuthHandler {
+	return &AuthHandler{usecase: u, logger: l}
 }
 
 func (h *AuthHandler) Auth(w http.ResponseWriter, r *http.Request) {
 	payload := entity.AuthRequest{}
 	if err := request.GetRequestData(r, &payload); err != nil {
+		h.logger.Error(err.Error())
 		response.WithError(w, 400, ErrDefault400)
 		return
 	}
-	if payload.Name == "" || payload.Password == "" {
+	if !payload.Valid() {
+		msg := "Тело запроса не содержит валидных данных"
+		h.logger.Error(msg)
 		response.WithError(w, 400, ErrDefault400)
 		return
 	}
 	userData, err := h.usecase.Auth(context.Background(), payload)
 	if err != nil {
-		fmt.Println(err)
+		h.logger.Error(err.Error())
 		if errors.Is(err, myErrors.WrongLoginOrPasswordErr) {
 			response.WithError(w, 500, myErrors.WrongLoginOrPasswordErr)
 			return
@@ -44,6 +49,7 @@ func (h *AuthHandler) Auth(w http.ResponseWriter, r *http.Request) {
 	}
 	jwtToken, err := token.GenerateToken(userData.ID, userData.Name)
 	if err != nil {
+		h.logger.Error(err.Error())
 		response.WithError(w, 500, ErrTokenGenerate)
 		return
 	}
