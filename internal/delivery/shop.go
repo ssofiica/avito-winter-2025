@@ -6,7 +6,6 @@ import (
 	myErrors "avito-winter-2025/internal/utils/errors"
 	"avito-winter-2025/internal/utils/response"
 	"errors"
-	"fmt"
 
 	"context"
 	"net/http"
@@ -33,7 +32,6 @@ func (h *ShopHandler) BuyMerch(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	merchName := vars["item"]
 	if merchName == "" {
-		fmt.Println("no item")
 		response.WithError(w, 400, ErrNoRequestVars)
 		return
 	}

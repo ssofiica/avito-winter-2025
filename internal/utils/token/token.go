@@ -12,18 +12,35 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-var JwtSecret = []byte("your_secret_key")
+type JWT struct {
+	Secret  []byte
+	ExpTime time.Duration
+}
 
-func GenerateToken(userID uint32, name string) (string, error) {
+func NewJWT(secret string, duration string) (JWT, error) {
+	expiration, err := time.ParseDuration(duration)
+	if err != nil {
+		return JWT{
+			Secret:  []byte(secret),
+			ExpTime: time.Duration(48 * time.Hour),
+		}, err
+	}
+	return JWT{
+		Secret:  []byte(secret),
+		ExpTime: expiration,
+	}, nil
+}
+
+func (j JWT) GenerateToken(userID uint32, name string) (string, error) {
 	claims := Claims{
 		UserID: userID,
 		Name:   name,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(48 * time.Hour)), // Токен истекает через 48 часов
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.ExpTime)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(JwtSecret)
+	return token.SignedString(j.Secret)
 }

@@ -5,6 +5,7 @@ import (
 	"avito-winter-2025/internal/delivery"
 	"avito-winter-2025/internal/repo"
 	"avito-winter-2025/internal/usecase"
+	"avito-winter-2025/internal/utils/token"
 	"context"
 	"fmt"
 	"log"
@@ -36,6 +37,11 @@ func main() {
 	}
 	defer db.Close()
 
+	jwt, err := token.NewJWT(os.Getenv("JWT_SECRET"), os.Getenv("JWT_DURATION"))
+	if err != nil {
+		logger.Error("Failed read jwt duration from docker-compose", zap.String("error", err.Error()))
+	}
+
 	userRepo := repo.NewUser(db)
 	coinRepo := repo.NewCoin(db)
 	merchRepo := repo.NewMerch(db)
@@ -44,7 +50,7 @@ func main() {
 	coinUsecase := usecase.NewCoin(coinRepo, userRepo)
 	merchUsecase := usecase.NewMerch(merchRepo, coinRepo)
 
-	authHandler := delivery.NewAuthHandler(userUsecase, logger)
+	authHandler := delivery.NewAuthHandler(userUsecase, logger, jwt)
 	coinHandler := delivery.NewCoinHandler(coinUsecase, userUsecase)
 	shopHandler := delivery.NewShopHandler(merchUsecase, userUsecase, coinUsecase)
 

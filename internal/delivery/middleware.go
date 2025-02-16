@@ -7,15 +7,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type userContextKey string
-
-const userKey userContextKey = "user"
+var userKey string = "user"
 
 func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -35,11 +34,10 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		claims := &token.Claims{}
 		t, err := jwt.ParseWithClaims(tokenString, claims, func(tok *jwt.Token) (interface{}, error) {
-			// Проверка метода подписи
 			if _, ok := tok.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("недопустимый метод подписи")
 			}
-			return token.JwtSecret, nil
+			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
 		if err != nil {
 			response.WithError(w, 401, ErrDefault401)
@@ -50,16 +48,14 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			response.WithError(w, 401, ErrDefault401)
 		}
 
-		// Проверяем срок действия токена
 		if claims.ExpiresAt.Time.Before(time.Now()) {
 			response.WithError(w, 401, ErrDefault401)
 			return
 		}
-		// Добавляем данные пользователя в контекст (можно использовать context для передачи дальше)
+
 		user := entity.User{ID: claims.UserID, Name: claims.Name}
 		ctx := context.WithValue(r.Context(), userKey, user)
 		r = r.WithContext(ctx)
-		// Передаем управление следующему обработчику
 		next.ServeHTTP(w, r)
 	}
 }

@@ -18,10 +18,11 @@ import (
 type AuthHandler struct {
 	usecase usecase.UserInterface
 	logger  *zap.Logger
+	jwt     token.JWT
 }
 
-func NewAuthHandler(u usecase.UserInterface, l *zap.Logger) *AuthHandler {
-	return &AuthHandler{usecase: u, logger: l}
+func NewAuthHandler(u usecase.UserInterface, l *zap.Logger, t token.JWT) *AuthHandler {
+	return &AuthHandler{usecase: u, logger: l, jwt: t}
 }
 
 func (h *AuthHandler) Auth(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +48,7 @@ func (h *AuthHandler) Auth(w http.ResponseWriter, r *http.Request) {
 		response.WithError(w, 500, ErrDefault500)
 		return
 	}
-	jwtToken, err := token.GenerateToken(userData.ID, userData.Name)
+	jwtToken, err := h.jwt.GenerateToken(userData.ID, userData.Name)
 	if err != nil {
 		h.logger.Error(err.Error())
 		response.WithError(w, 500, ErrTokenGenerate)
