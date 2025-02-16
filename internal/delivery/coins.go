@@ -7,7 +7,6 @@ import (
 	"avito-winter-2025/internal/utils/request"
 	"avito-winter-2025/internal/utils/response"
 	"errors"
-	"fmt"
 
 	"context"
 	"net/http"
@@ -48,7 +47,6 @@ func (h *CoinHandler) SendCoin(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.coinUC.SendCoin(context.Background(), from.ID, to.ID, uint32(payload.Amount))
 	if err != nil {
-		fmt.Println(err)
 		if errors.Is(err, myErrors.NotEnoughCoinErr) {
 			response.WithError(w, 400, myErrors.NotEnoughCoinErr)
 			return

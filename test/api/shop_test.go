@@ -27,6 +27,11 @@ func InitPostgres(user, password, host, port, name string) *pgxpool.Pool {
 	db, err := pgxpool.New(context.Background(), PG_CONN)
 	if err != nil {
 		log.Fatal("Failed to connect to PostgreSQL", err)
+		return nil
+	}
+	if err := db.Ping(context.Background()); err != nil {
+		log.Fatal("Failed to connect to PostgreSQL", err)
+		return nil
 	}
 	return db
 }
