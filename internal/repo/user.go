@@ -7,7 +7,6 @@ import (
 
 	"github.com/jackc/pgx"
 	pgx5 "github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var COINS = 1000
@@ -20,10 +19,10 @@ type UserInterface interface {
 }
 
 type User struct {
-	db *pgxpool.Pool
+	db DBInterface
 }
 
-func NewUser(db *pgxpool.Pool) UserInterface {
+func NewUser(db DBInterface) UserInterface {
 	return &User{db: db}
 }
 

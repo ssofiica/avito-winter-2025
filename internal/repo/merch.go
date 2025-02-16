@@ -5,7 +5,6 @@ import (
 	"context"
 
 	"github.com/jackc/pgx"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 //go:generate mockgen -source=merch.go -destination=mock/merch_mock.go -package=mock
@@ -16,10 +15,10 @@ type MerchInterface interface {
 }
 
 type Merch struct {
-	db *pgxpool.Pool
+	db DBInterface
 }
 
-func NewMerch(db *pgxpool.Pool) MerchInterface {
+func NewMerch(db DBInterface) MerchInterface {
 	return &Merch{db: db}
 }
 
@@ -63,7 +62,7 @@ func (m *Merch) GetInventoryHistory(ctx context.Context, id uint32) ([]entity.In
 				JOIN merch as m ON i.merch_id=m.id 
 				WHERE i.user_id=$1
 				GROUP BY m.name;`
-	var res []entity.Inventory
+	res := []entity.Inventory{}
 	rows, err := m.db.Query(ctx, query, id)
 	if err != nil {
 		return res, err

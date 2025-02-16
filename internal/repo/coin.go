@@ -3,8 +3,7 @@ package repo
 import (
 	"avito-winter-2025/internal/entity"
 	"context"
-
-	"github.com/jackc/pgx/v5/pgxpool"
+	//"github.com/jackc/pgx/v5/pgxpool"
 )
 
 //go:generate mockgen -source=coin.go -destination=mock/coin_mock.go -package=mock
@@ -15,10 +14,10 @@ type CoinInterface interface {
 }
 
 type Coin struct {
-	db *pgxpool.Pool
+	db DBInterface
 }
 
-func NewCoin(db *pgxpool.Pool) CoinInterface {
+func NewCoin(db DBInterface) CoinInterface {
 	return &Coin{db: db}
 }
 
@@ -61,7 +60,7 @@ func (u *Coin) CheckBalance(ctx context.Context, id uint32) (uint32, error) {
 
 func (u *Coin) GetCoinHistory(ctx context.Context, id uint32) ([]entity.Transaction, error) {
 	query := `select from_user, to_user, amount from coin_history where from_user=$1 OR to_user=$1;`
-	var res []entity.Transaction
+	res := []entity.Transaction{}
 	rows, err := u.db.Query(ctx, query, id)
 	if err != nil {
 		return res, err
